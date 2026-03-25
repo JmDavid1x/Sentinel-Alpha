@@ -15,8 +15,8 @@ if not GOOGLE_API_KEY:
     raise ValueError("GEMINI_API_KEY no encontrada en .env")
 
 genai.configure(api_key=GOOGLE_API_KEY)
-# Utilizamos gemini-1.5-flash por ser 100% free-tier y extremadamente veloz
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Utilizamos gemini-2.0-flash que es el estandar mas reciente
+model = genai.GenerativeModel('gemini-2.0-flash')
 
 # Inicializacion persistente de Base Vectorial Local
 chroma_client = chromadb.PersistentClient(path="./chroma_db_mvp")
@@ -39,19 +39,25 @@ def analyst_node(state: AgentState) -> dict:
     print(" -> [Analyst Node] Solicitando evaluacion de riesgo inicial a Gemini...")
     system_prompt = "Eres un Senior Risk Analyst operando en Colombia. Evalua riesgos operativos y financieros del escenario planteado."
     
-    response = model.generate_content(
-        f"INSTRUCCION: {system_prompt}\n\nESCENARIO A EVALUAR:\n{state['input']}"
-    )
-    return {"analysis": response.text}
+    try:
+        response = model.generate_content(
+            f"INSTRUCCION: {system_prompt}\n\nESCENARIO A EVALUAR:\n{state['input']}"
+        )
+        return {"analysis": response.text}
+    except Exception as e:
+        return {"analysis": f"[ERROR DEL MODELO/SDK]: {str(e)}"}
 
 def critic_node(state: AgentState) -> dict:
     print(" -> [Critic Node] Activando auditoria interna (Gemini self-critique)...")
     system_prompt = "Eres un Auditor Interno riguroso. Critica el siguiente analisis de riesgo buscando sesgos cognitivos o falencias logicas."
     
-    response = model.generate_content(
-        f"INSTRUCCION: {system_prompt}\n\nANALISIS A AUDITAR:\n{state.get('analysis', '')}"
-    )
-    return {"critique": response.text}
+    try:
+        response = model.generate_content(
+            f"INSTRUCCION: {system_prompt}\n\nANALISIS A AUDITAR:\n{state.get('analysis', '')}"
+        )
+        return {"critique": response.text}
+    except Exception as e:
+        return {"critique": f"[ERROR DEL MODELO/SDK]: {str(e)}"}
 
 def mem_store_node(state: AgentState) -> dict:
     print(" -> [Mem Store Node] Persistiendo experiencia en DB Vectorial (ChromaDB)...")
