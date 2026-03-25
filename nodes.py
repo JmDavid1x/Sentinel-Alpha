@@ -72,6 +72,7 @@ def analyst(state: AgentState) -> Dict[str, Any]:
         print(f"    [!] Telemetria Analista: Finalizado en {latency:.3f} s.")
         return {"analysis": response.choices[0].message.content}
     except Exception as e:
+        print(f"    [X] Fallo critico en API Google: {str(e)}")
         return {"analysis": f"ERROR DE CONEXION/GATEWAY LLM: {str(e)}"}
 
 def critic(state: AgentState) -> Dict[str, Any]:
@@ -89,12 +90,13 @@ Responde en sintesis."""
     ]
     start_time = time.time()
     try:
-        response = completion(model="claude-3-5-sonnet-20241022", messages=messages, temperature=0.1)
+        response = completion(model="anthropic/claude-3-5-sonnet-20241022", messages=messages, temperature=0.1)
         latency = time.time() - start_time
         print(f"    [!] Telemetria Critico: Finalizado en {latency:.3f} s.")
         return {"critique": response.choices[0].message.content}
     except Exception as e:
-        print("    [!] Fallback Auditor MOCK activado por ausencia de API Key.")
+        print(f"    [X] Fallo en API Anthropic: {str(e)}")
+        print("    [!] Fallback Auditor MOCK activado por ausencia o error de API.")
         return {"critique": "Auditoria fallback: El framework de contingencia parece factible en Colombia 2026 sin sesgos aparentes."}
 
 def reflector(state: AgentState) -> Dict[str, Any]:

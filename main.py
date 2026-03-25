@@ -1,52 +1,114 @@
+import os
+import chromadb
+import google.generativeai as genai
+from typing import TypedDict
+from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
-from state import AgentState
-from nodes import analyst, critic, reflector, optimizer
 
+# ==========================================================
+# 1. SETUP: Variables de Entorno y Configuracion API
+# ==========================================================
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GOOGLE_API_KEY:
+    raise ValueError("GEMINI_API_KEY no encontrada en .env")
+
+genai.configure(api_key=GOOGLE_API_KEY)
+# Utilizamos gemini-1.5-flash por ser 100% free-tier y extremadamente veloz
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Inicializacion persistente de Base Vectorial Local
+chroma_client = chromadb.PersistentClient(path="./chroma_db_mvp")
+memory_collection = chroma_client.get_or_create_collection(name="sentinel_memory")
+
+# ==========================================================
+# 2. STATE: Definicion del Datagrama (Payload)
+# ==========================================================
+class AgentState(TypedDict):
+    input: str
+    analysis: str
+    critique: str
+    refined_analysis: str
+    memory_id: str
+
+# ==========================================================
+# 3. NODOS: Logica de Agentes (Gemini-Centric)
+# ==========================================================
+def analyst_node(state: AgentState) -> dict:
+    print(" -> [Analyst Node] Solicitando evaluacion de riesgo inicial a Gemini...")
+    system_prompt = "Eres un Senior Risk Analyst operando en Colombia. Evalua riesgos operativos y financieros del escenario planteado."
+    
+    response = model.generate_content(
+        f"INSTRUCCION: {system_prompt}\n\nESCENARIO A EVALUAR:\n{state['input']}"
+    )
+    return {"analysis": response.text}
+
+def critic_node(state: AgentState) -> dict:
+    print(" -> [Critic Node] Activando auditoria interna (Gemini self-critique)...")
+    system_prompt = "Eres un Auditor Interno riguroso. Critica el siguiente analisis de riesgo buscando sesgos cognitivos o falencias logicas."
+    
+    response = model.generate_content(
+        f"INSTRUCCION: {system_prompt}\n\nANALISIS A AUDITAR:\n{state.get('analysis', '')}"
+    )
+    return {"critique": response.text}
+
+def mem_store_node(state: AgentState) -> dict:
+    print(" -> [Mem Store Node] Persistiendo experiencia en DB Vectorial (ChromaDB)...")
+    
+    doc_id = f"mem_{os.urandom(4).hex()}"
+    final_knowledge = f"Escenario: {state['input']}\nAnalisis: {state.get('analysis', '')}\nCritica: {state.get('critique', '')}"
+    
+    memory_collection.add(
+        documents=[final_knowledge],
+        ids=[doc_id]
+    )
+    return {"memory_id": doc_id, "refined_analysis": final_knowledge}
+
+# ==========================================================
+# 4. GRAFO: Topologia de Flujo LangGraph
+# ==========================================================
 def build_graph() -> StateGraph:
-    """
-    Construye la topologia del Grafo de Estados del ecosistema Sentinel-Alpha (Days 3-7).
-    Diseno de Pipeline Multi-Agente: START -> Analyst -> Critic -> Reflector -> Optimizer -> END
-    """
     workflow = StateGraph(AgentState)
     
-    # Registro de Agentes (Instancias Nodos)
-    workflow.add_node("analyst", analyst)
-    workflow.add_node("critic", critic)
-    workflow.add_node("reflector", reflector)
-    workflow.add_node("optimizer", optimizer)
+    workflow.add_node("analyst_node", analyst_node)
+    workflow.add_node("critic_node", critic_node)
+    workflow.add_node("mem_store_node", mem_store_node)
     
-    # Definicion del Enrutamiento Lineal Reflexivo (Routing/Edges)
-    workflow.add_edge(START, "analyst")
-    workflow.add_edge("analyst", "critic")
-    workflow.add_edge("critic", "reflector")
-    workflow.add_edge("reflector", "optimizer")
-    workflow.add_edge("optimizer", END)
+    workflow.add_edge(START, "analyst_node")
+    workflow.add_edge("analyst_node", "critic_node")
+    workflow.add_edge("critic_node", "mem_store_node")
+    workflow.add_edge("mem_store_node", END)
     
-    # Resolucion y Compilacion Semiotica
-    app = workflow.compile()
-    return app
+    return workflow.compile()
 
+# ==========================================================
+# 5. EJECUCION: Interfaz Interactiva de Consola
+# ==========================================================
 if __name__ == "__main__":
-    print("=== Iniciando Ecosistema Autonomo Sentinel-Alpha v1.0 ===")
+    print("="*60)
+    print(" Sentinel-Alpha MVP: Autonomous Risk Arbiter (100% Free Tier)")
+    print("="*60)
     
-    # Levantar el kernel de comunicacion LangGraph
     app = build_graph()
     
-    # Payload o Datagrama Inicial (Gen-1)
+    # Input Dinamico
+    user_input = input("\n[>] Ingrese el contexto de riesgo a analizar en Colombia: \n>>> ")
+    
     initial_state = {
-        "input": "Analisis de riesgo macroeconomico en las transacciones digitales por fluctuacion de TRM y estres de latencia en la pasarela CENIT/Sart bajo carga alta del Banco de la Republica (Marzo 2026).",
+        "input": user_input,
         "analysis": "",
         "critique": "",
-        "error_score": 0.0,
-        "memory_context": []
+        "refined_analysis": "",
+        "memory_id": ""
     }
     
-    print("\n[>>] Vectorizando Inferencia de Red Descentralizada...")
+    print("\nEjecutando Pipeline Autoritativo...\n")
+    final_state = app.invoke(initial_state)
     
-    # Ejecutar la transaccion sincronamente
-    result = app.invoke(initial_state)
-    
-    print("\n=== Estado Final del Datagrama (Payload) ===")
-    print(f"-> SCORE DE ERROR RESULTANTE vs Realidad: {result.get('error_score')}")
-    print(f"-> OBSERVACIONES EN MEMORIA RAM: {result.get('memory_context')}")
-    print("\nMision Sentinel-Alpha Finalizada con Exito.")
+    print("\n" + "="*60)
+    print(" RESULTADOS DEL CICLO MULTI-AGENTE")
+    print("="*60)
+    print(f"\n[ANALISIS INICIAL]:\n{final_state.get('analysis')}")
+    print(f"\n[CRITICA DEL AUDITOR]:\n{final_state.get('critique')}")
+    print(f"\n[MEMORIA GUARDADA ID]: {final_state.get('memory_id')}")

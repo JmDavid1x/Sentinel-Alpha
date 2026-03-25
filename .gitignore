@@ -1,0 +1,12 @@
+# Credenciales y Secretos
+.env
+
+# Entornos Virtuales y Dependencias Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Base de Datos Local Vectorial
+chroma_db_mvp/
+chroma_db/
