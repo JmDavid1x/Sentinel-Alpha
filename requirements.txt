@@ -1,0 +1,4 @@
+langgraph
+litellm
+chromadb
+python-dotenv
