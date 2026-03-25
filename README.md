@@ -1,46 +1,39 @@
-# Sentinel-Alpha: Autonomous Risk Arbiter
+# Sentinel-Alpha: Autonomous Risk Arbiter (Versión 1.0)
 
-## Contexto del Proyecto
+## Sobre Mí y el Proyecto 🏆
 
-Desarrollado como proyecto de alta ingenieria para estudiantes de Ingenieria telematica y de Sistemas. 
-Sentinel-Alpha es un sistema Multi-Agentes de IA diseñado para analizar riesgos financieros en Colombia. 
-El nucleo del proyecto utiliza un bucle de auto-correccion (Self-Correction Loop) apoyado por Machine Learning, permitiendo a los distintos agentes (Gemini y Claude) interactuar, cuestionarse y aprender de manera iterativa de los errores de calculo y estimacion pasados.
+¡Hola! Soy David, Senior Architect y estudiante de Ingeniería Telemática y de Sistemas. He desarrollado **Sentinel-Alpha** como mi proyecto de grado y portafolio tecnológico avanzado. Su propósito es demostrar mis habilidades en el liderazgo y construcción de ecosistemas autónomos descentralizados (Multi-Agent Systems), gestión de micro-estados distribuidos e IA generativa orientada a la contingencia real.
 
-## Estructura de Desarrollo (Plan de 7 Dias)
+En este repositorio resolví el problema clásico de la **"alucinación predictiva"** y **"latencia transaccional"** de los modelos de inteligencia artificial aplicados sobre la fluctuación hiperdinámica propia de nuestro sector en Colombia. Para marzo de 2026, medir el impacto de la Tasa Representativa del Mercado (TRM) y el riesgo operativo en interoperabilidades físicas interbancarias (CENIT y Sart del Banco de la República), exige un modelo autónomo estricto de auto-corrección.
 
-Este repositorio mantiene una evolucion estructurada a traves de 7 dias, con integraciones progresivas para el pipeline AI:
+## Arquitectura Modular del Ecosistema (7 Días de Ingeniería)
 
-### Dia 1: Foundation
-Se establecieron las capas fundamentales para la interaccion de componentes. Se estructuro el manejo del estado global (State Management) y el esqueleto de directorios basado en LangGraph.
-- Se definieron los requisitos del proyecto en `requirements.txt`.
-- Se declaro la clase principal `AgentState` en `state.py` para normalizar el payload transmitido.
-- Se configuraron los placeholders para los nodos principales en `nodes.py` (analista, critico y reflector).
-- Se enlazo e implemento la maquina de estados base en `main.py`, trazando una ruta elemental `START -> analyst -> END`.
+Sinteticé toda una topología de red distribuida (Agent Pipeline) empleando el kernel avanzado de **LangGraph** para mantener consistencia de datagramas e historial entre agentes. El esqueleto final del orquestador maneja los siguientes subsistemas lógicos:
 
-### Dia 2: Gemini Brain (Proximamente)
-Integracion de 'gemini-2.0-flash' en el nodo de analisis. Actuara como el motor de extraccion heuristica, formulando el primer analisis de riesgo a partir de las metricas del contexto en crudo.
+1. **[Día 2] Gemini Brain (El Científico / Heurística de Extracción):** Utilicé integración segura con API REST vía _LiteLLM_ para enlazar `gemini-2.0-flash`. Diseñé este nodo para recolectar e inferir vulnerabilidades interbancarias, y lo obligué programáticamente a estructurar sus descubrimientos en JSON crudo y calculable. Le implementé además lógica _Timer_ (Telemetría de Red Local) para vigilar caídas del Gateway.
+2. **[Día 3] Claude Auditor (El Perro Guardián):** Implementé la inferencia algorítmica lógica de `claude-3-5-sonnet`. Actúa de contención para sesgos cognitivos o falacias de costo hundido propuestos por el propio Gemini. Es el firewall contra alucinaciones.
+3. **[Día 4-5] Vector Memory y Self-Correction Loop:** Usé **ChromaDB** para levantar una base de datos vectorial local (como un buffer en RAM de persistencia larga). El sistema simula transacciones enfrentándolas contra el mercado "real". Con ello genera una métrica matemática de `Error Score` entre el riesgo real y el evaluado, castigando drásticamente el error de formato JSON o incoherencia.
+4. **[Día 6] Inteligente Machine Learning (Optimizador de Prompting Recursivo):** Lógica avanzada. Si el Error Score alcanza métricas de colapso de fiabilidad superior al 0.4 de pérdida, este script asume que los agentes están infiriendo basura, y escribe dinámicamente **reglas en la Memoria del Prompt Futuro**, obligando a Gemini a enfocar mejor su output para la siguiente iteración de inferencia.
 
-### Dia 3: Claude Auditor (Proximamente)
-Integracion de 'claude-3-5-sonnet' en el nodo critic. Actuara como la capa de resiliencia logica y auditoria para desafiar cualquier sesgo cognitivo, falacia de costo hundido o asunciones infundadas originadas por el nodo Gemini, estableciendo de manera conjunta el nivel real de riesgo.
+## Metodología y Telemetría Aplicada (Telemática Core) ⚙️
 
-### Dia 4: Vector Memory (Proximamente)
-Inclusion de ChromaDB para persistencia neuronal vectorial a largo plazo. Todos los analisis, errores probados y retroalimentaciones pasaran a almacenarse aqui como tensores contextuales recuperables mediante similitud para enriquecer las proximas inferencias del sistema.
+Como experto telemático abordé la capa de Transporte y Aplicación implementado control de latencia asíncrona por request, manejos de excepciones globales, entornos virtuales segregados (Variables de entorno .env protegidas) y Git tracking para asegurar consistencia del repositorio.
 
-### Dia 5: Self-Correction Loop (Proximamente)
-Activacion del nodo de reflexion. Mediante tecnicas analiticas, el nodo cuantificara el error (Prediccion teorica vs Realidad empobrecedora / mercado). Esta validacion de contraste genera el `error_score` del datagrama.
+### ¿Cómo Desplegar mi Proyecto Localmente?
 
-### Dia 6: ML Prompt Optimizer (Proximamente)
-Inclusion de logica dinamica de optimizacion. A traves del indice de error registrado en dias pasados, el orquestador re-escribira de forma autonoma el System Prompt de base de los agentes intervinientes ("Prompt Engineering on-the-fly"), afinando el comportamiento sin intervencion humana.
+Es sumamente eficiente su levantamiento. Requiere las librerías mencionadas en `requirements.txt`:
 
-### Dia 7: Final Polish (Proximamente)
-Refinamiento, visualizaciones de control, presentacion de grafos generados por LangGraph y consideraciones excepcionales para la mitigacion de fallos por latencia de API (toque 'antigravity').
+1. Instala en tu máquina los vectores del entorno:
+```bash
+pip install -r requirements.txt
+```
 
-## Instalacion y Ejecucion del Entorno
+2. Duplica mi archivo plantilla `.env.example`, re-nómbralo como `.env` e integra allí tus claves de acceso de la API (Gemini Studio API y Anthropic API Key).
 
-A partir de la raiz del proyecto, siga estos pasos:
+3. Ejecuta la prueba de estrés macroeconómica de LangGraph:
+```bash
+python main.py
+```
 
-1. Instalar modulos (LangGraph y dependencias locales):
-   pip install -r requirements.txt
-   
-2. Inicializar la secuencia de grafos actual:
-   python main.py
+---
+*Este proyecto refleja mi capacidad para resolver contingencias complejas desde un enfoque puro de ingeniería e innovación de software. Gracias por visitar este apartado de mi portafolio.*
